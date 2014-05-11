@@ -9,10 +9,7 @@ $(document).ready(function() {
 
     $('.navigation-tabs a[href="' + activeTab + '"]').tab('show');
 
-    $('.navigation-tabs a').click(function (e) {
+    $('.navigation-tabs a').click(function () {
         $(this).tab('show');
     });
-
-
-    prettyPrint();
 });
