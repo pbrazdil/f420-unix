@@ -1,0 +1,151 @@
+<!doctype html>
+<html class="no-js">
+
+<head>
+  <meta charset="utf-8">
+  <title>F4270 UNIX, počítačové sítě</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <!-- build:css styles/vendor.css -->
+  <!-- bower:css -->
+
+  <!-- endbower -->
+  <!-- endbuild -->
+  <!-- build:css(.tmp) styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild -->
+</head>
+
+<body>
+  <!--[if lt IE 10]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+
+  <div class="container">
+    <div class="header">
+      <ul class="navigation-tabs nav nav-pills pull-right">
+        <li><a href="#task-02">Úkol 02</a>
+        </li>
+        <li><a href="#task-17">Úkol 17</a>
+        </li>
+      </ul>
+      <h3 class="text-muted">
+                  F4270 UNIX, počítačové sítě
+                </h3>
+    </div>
+
+
+    <div class="tab-content">
+      <div class="tab-pane fade in" id="task-02">
+        <p class="lead">
+          Zadání: Vypiš jména všech souborů v cestě (PATH), které jsou symbolické linky na skripty v shellu.
+        </p>
+
+
+        <p>Abychom mohli skrze proměnnou <code>PATH</code> iterovat, nahradíme nejprve středníky za mezery pomocí expanze parametru. V tomto případě se jedná o notaci <code>${parameter/pattern/string}</code>, konkrétně tedy <code>${PATH//:/ }</code>.</p>
+
+        <p>Nyní můžeme pomocí <code>for dir in ${PATH//:/ }; do</code> procházet jednotlivé adresáře v <code>PATH</code>. Cesty ke všem souborům v těchto adresářích získáme v dalším vnořeném cyklu <code>for file in "$dir"/*; do</code>. Ve <code>file</code> nyní
+          máme soubory, které jsou přístupné skrze <code>PATH</code>.</p>
+
+
+        <p>Ůkolem je najít všechny symbolické linky. Symbolický link je ukazatelem na reálný inode souboru, popřípadně složky. Zdali se jedná o symbolický link můžeme vyčíst z příkazu <code>ls -l</code>, kde na pozici typu souboru je znak <code>l</code>. Programově
+          je snadnější využít příkazu <code>readlink</code>, který vypíše adresu cílového souborového deskriptoru, pokud se o symbolický link nejedná, pak nevypíše nic a skončí s chybou.</p>
+
+
+        <p>Řešením je skript v bash níže.</p>
+
+        <div class="highlight">
+          <pre>
+#!/bin/sh
+
+for dir in ${PATH//:/ }; do
+  for file in "$dir"/*; do
+    link=`readlink -n "$file"`
+    [ ! -z "$link" ] && echo "$file -> $link"
+  done
+done</pre>
+        </div>
+      </div>
+      <div class="tab-pane fade " id="task-17">
+        <p class="lead">
+          Zadání: Vypiš ze souboru všechna URL v uvozovkách, bez těch uvozovek. Stačí protokoly <code>http</code>, <code>https</code>, <code>ftp</code> a <code>file</code>. Testovat lze na libovolné webové stránce.
+        </p>
+
+
+        <p>Pro vyřešení tohoto problému využijeme příkazu <code>egrep</code>, jedná se o alias pro <code>grep -E</code>. Oproti samotnému <code>grep</code> je zde přidána podpora pro rozšířené regex výrazy, ty jsou obohaceny například o meta znaky <code>?</code>, <code>|</code> či <code>+</code>.
+          Regex (někdy také označováno jako regexp, tedy název vyhovující regulárnímu výrazu<code>/regexp?/</code> je korektní) je regulární výraz, který definuje určitou masku použitím speciální syntaxe. V tomto případě se nám bude hodit pro zadefinování
+          masky pro URL adresy, kterou následně použijeme pro nalezení všech výskytů URL adres v souboru.</p>
+
+        <p>Chceme vypsat pouze samotný řetězec (ne celý řádek), který vyhovuje regulárnímu výrazu, proto přídáme přepínač <code>egrep -o</code>.</p>
+
+
+        <p>Výsledný regulární výraz pro URL adresu má tvar <code>[^\"]{0}(file|ftp|http(s)?://){1}[^\"]+</code>.
+          <ul>
+            <li> <code>[^\"]{0}</code> říká, že regulární výraz nezačíná znakem <code>"</code>. Syntaxe <code>{n}</code> je kvantifikátorem, ten říká, že předchozí složka se vyskytuje právě n-krát.</li>
+            <li>Meta znak <code>|</code> v tomto případě představuje logický OR.</li>
+            <li>Část masky <code>http(s)?</code> vyhovuje jak pro <code>http</code> tak i pro <code>https</code>. Jinými slovy, <code>?</code> říká, že předchozí znak je volitelný.</li>
+            <li><code>{1}</code> znamená, že předchozí položka <code>(file|ftp|http(s)?://)</code> se nachází v řetězci právě jednou.</li>
+            <li>Nyní si rozeberme <code>[^\"]+</code>. Meta znak <code>+</code> znamená, jeden nebo více. Tedy jeden nebo více znaků, které vyhovují masce <code>[^\"]</code>. Maska <code>[^\"]</code> představuje znak, který není roven <code>"</code>. Tedy jinými
+              slovy, <code>[^\"]+</code> představuje jakoukoli sekvenci jednoho a více znaků, které neobsahují <code>"</code>.</li>
+          </ul>
+
+          <p>
+            Této masce odpovídají URL adresy ze zadání.
+          </p>
+
+
+          <p>Výsledným řešením je skript v bash níže, jméno souboru je předáno parametrem.</p>
+
+          <div class="highlight">
+            <pre>
+#!/bin/sh
+
+if [ -z "$1" ]; then
+  echo "HTML file not specified."
+  exit
+fi
+
+egrep -o "[^\"]{0}(file|ftp|http(s)?://){1}[^\"]+" $1 | tr -d '"'
+</pre>
+          </div>
+      </div>
+    </div>
+
+
+
+    <div class="footer">
+      <p>Petr Brázdil, 396405</p>
+    </div>
+
+  </div>
+
+
+  <!-- build:js scripts/vendor.js -->
+  <!-- bower:js -->
+  <script src="../bower_components/jquery/dist/jquery.js"></script>
+  <!-- endbower -->
+  <!-- endbuild -->
+
+  <!-- build:js scripts/plugins.js -->
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/affix.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/alert.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/dropdown.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/tooltip.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/modal.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/transition.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/button.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/popover.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/carousel.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/scrollspy.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/collapse.js"></script>
+  <script src="../bower_components/bootstrap-sass-official/vendor/assets/javascripts/bootstrap/tab.js"></script>
+  <!-- endbuild -->
+
+  <!-- build:js({app,.tmp}) scripts/main.js -->
+  <script src="scripts/main.js"></script>
+  <!-- endbuild -->
+</body>
+
+</html>
