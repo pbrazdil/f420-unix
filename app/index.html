@@ -68,7 +68,7 @@ for dir in ${PATH//:/ }; do
 done</pre>
         </div>
       </div>
-      <div class="tab-pane fade " id="task-17">
+      <div class="tab-pane fade" id="task-17">
         <p class="lead">
           Zadání: Vypiš ze souboru všechna URL v uvozovkách, bez těch uvozovek. Stačí protokoly <code>http</code>, <code>https</code>, <code>ftp</code> a <code>file</code>. Testovat lze na libovolné webové stránce.
         </p>
@@ -81,7 +81,7 @@ done</pre>
         <p>Chceme vypsat pouze samotný řetězec (ne celý řádek), který vyhovuje regulárnímu výrazu, proto přídáme přepínač <code>egrep -o</code>.</p>
 
 
-        <p>Výsledný regulární výraz pro URL adresu má tvar <code>[^\"]{0}(file|ftp|http(s)?://){1}[^\"]+</code>.
+        <p>Výsledný regulární výraz pro URL adresu má tvar <code>[^\"]{0}(file|ftp|http(s)?://){1}[^\"]+</code>.</p>
           <ul>
             <li> <code>[^\"]{0}</code> říká, že regulární výraz nezačíná znakem <code>"</code>. Syntaxe <code>{n}</code> je kvantifikátorem, ten říká, že předchozí složka se vyskytuje právě n-krát.</li>
             <li>Meta znak <code>|</code> v tomto případě představuje logický OR.</li>
@@ -116,7 +116,7 @@ egrep -o "[^\"]{0}(file|ftp|http(s)?://){1}[^\"]+" $1 | tr -d '"'
 
 
     <div class="footer">
-      <p>Petr Brázdil, 396405</p>
+      <p>Petr Brázdil, 396405, <a href="https://github.com/pbrazdil/f420-unix">https://github.com/pbrazdil/f420-unix</a></p>
     </div>
 
   </div>
