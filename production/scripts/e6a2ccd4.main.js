@@ -1,0 +1,1 @@
+"use strict";$(document).ready(function(){var a="#task-02";window.location.hash&&(a=window.location.hash),$('.navigation-tabs a[href="'+a+'"]').tab("show"),$(".navigation-tabs a").click(function(){$(this).tab("show")})});
