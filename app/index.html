@@ -53,6 +53,7 @@
         <p>Ůkolem je najít všechny symbolické linky. Symbolický link je ukazatelem na reálný inode souboru, popřípadně složky. Zdali se jedná o symbolický link můžeme vyčíst z příkazu <code>ls -l</code>, kde na pozici typu souboru je znak <code>l</code>. Programově
           je snadnější využít příkazu <code>readlink</code>, který vypíše adresu cílového souborového deskriptoru, pokud se o symbolický link nejedná, pak nevypíše nic a skončí s chybou.</p>
 
+        <p>Pro zjištění, zda-li se jedná o skript v shellu využijeme funkci <code>file</code> společně s <code>grep</code>.</p>
 
         <p>Řešením je skript v bash níže.</p>
 
@@ -63,7 +64,9 @@
 for dir in ${PATH//:/ }; do
   for file in "$dir"/*; do
     link=`readlink -n "$file"`
-    [ ! -z "$link" ] && echo "$file -> $link"
+    if [ ! -z "$link" ]; then
+       [[ `file $file | grep "shell script"` ]] && echo "$file -> $link"
+    fi
   done
 done</pre>
         </div>
@@ -107,7 +110,7 @@ if [ -z "$1" ]; then
   exit
 fi
 
-egrep -o "[^\"]{0}(file|ftp|http(s)?://){1}[^\"]+" $1 | tr -d '"'
+egrep -o "[^\"]{0}(file|ftp|http(s)?://){1}[^\"]+" $1
 </pre>
           </div>
       </div>
